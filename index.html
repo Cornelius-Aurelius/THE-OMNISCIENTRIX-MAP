@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<title>Omniscientrix Universe Map vΩ.∞ MASTER — Hybrid Quantum AI Engine</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+/* ============================================================
+   OMNISCIENTRIX UNIVERSE MAP vΩ.∞ MASTER EDITION
+   THE MOST ADVANCED VERSION EVER CREATED
+   — Neon Blue Quantum Theme —
+============================================================ */
+
+html, body {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: #000;
+  font-family: Arial, sans-serif;
+  color: #9ee7ff;
+  user-select: none;
+}
+
+/* ---------------- MOBILE MENU BUTTON ---------------- */
+#toggleBtn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: #003355dd;
+  color: #9ee7ff;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid #00aaff88;
+  cursor: pointer;
+  font-size: 16px;
+  display: none;
+  z-index: 999;
+}
+
+/* ---------------- CONTROL PANEL ---------------- */
+#uiPanel {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  width: 320px;
+  padding: 18px;
+  background: rgba(0,18,35,0.65);
+  border: 1px solid #00caff77;
+  border-radius: 16px;
+  backdrop-filter: blur(10px);
+  color: #b9f2ff;
+  box-shadow: 0 0 12px #0099ff55;
+  z-index: 998;
+  transition: transform .35s ease;
+}
+
+#uiPanel h1 {
+  margin: 0 0 14px;
+  font-size: 22px;
+  color: #7eeaff;
+  text-shadow: 0 0 10px #0099ccaa;
+}
+
+#uiPanel label {
+  font-size: 14px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+#uiPanel select,
+#uiPanel input[type=range],
+#uiPanel input[type=text],
+#uiPanel button,
+#uiPanel input[type=checkbox] {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 6px;
+  background: #001c2a;
+  border: 1px solid #00caff55;
+  border-radius: 8px;
+  color: #aeefff;
+}
+
+#uiPanel button {
+  cursor: pointer;
+  background: #002a44;
+  border: 1px solid #0099cc;
+}
+#uiPanel button:hover {
+  background: #004466;
+}
+
+/* ---------------- CANVAS ---------------- */
+canvas {
+  display: block;
+}
+
+/* ---------------- SYSTEM PANEL ---------------- */
+#systemPanel {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  width: 280px;
+  padding: 16px;
+  background: rgba(0,15,30,0.8);
+  border: 1px solid #0099cc88;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0 14px #00aaff44;
+  z-index: 900;
+  display: none;
+  color: #9ee7ff;
+}
+#systemPanel h2 {
+  margin-top: 0;
+  font-size: 20px;
+  color: #88e1ff;
+}
+#systemPanel .closeBtn {
+  text-align: right;
+  cursor: pointer;
+  color: #66d0ff;
+}
+
+/* ---------------- MINI-MAP ---------------- */
+#miniMap {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 180px;
+  height: 180px;
+  background: rgba(0,20,40,0.7);
+  border: 1px solid #0099cc88;
+  border-radius: 12px;
+  box-shadow: 0 0 10px #00aaff33;
+  backdrop-filter: blur(8px);
+  z-index: 900;
+}
+#miniMap canvas {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+/* ---------------- FOOTER ---------------- */
+#footer {
+  position: fixed;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  color: #00baff;
+  text-align: center;
+}
+#footer a {
+  color: #66e0ff;
+  text-decoration: none;
+  text-shadow: 0 0 4px #0088cc;
+}
+
+/* ---------------- MOBILE ---------------- */
+@media(max-width: 920px){
+  #toggleBtn { display: block; }
+  #uiPanel { transform: translateX(140%); }
+  #uiPanel.open { transform: translateX(0); }
+}
+</style>
+</head>
+
+<body>
+
+<!-- MOBILE MENU -->
+<div id="toggleBtn">Ω MENU</div>
+
+<!-- CONTROL PANEL -->
+<div id="uiPanel">
+  <h1>Ω.∞ CONTROL PANEL</h1>
+
+  <label>Field Mode</label>
+  <select id="modeSel">
+    <option value="blend">Ω-Quantum Blend</option>
+    <option value="life">Ω-Life Resonance</option>
+    <option value="curv">Ω-Curvature Field</option>
+    <option value="aware">Awareness Tensor</option>
+    <option value="flux">Information Flux</option>
+    <option value="ghz">Quantum GHZ</option>
+    <option value="horizon">Entropy Horizon</option>
+    <option value="collapse">Collapse–Diffusion</option>
+    <option value="star">Real Star Spectra</option>
+    <option value="ai">Ω-AI Life Prediction</option>
+    <option value="dyson">Ω-Dyson Technosignature</option>
+    <option value="constel">Ω-Constellation Mode</option>
+  </select>
+
+  <label>Ω-Intensity</label>
+  <input type="range" id="omegaInt" min="0" max="1" step="0.01" value="0.55">
+
+  <label>Timewarp</label>
+  <input type="range" id="timeWarp" min="0.1" max="5" step="0.1" value="1">
+
+  <label>AstroCamera</label>
+  <input type="checkbox" id="astroCam">
+
+  <label>Draw Constellations</label>
+  <input type="checkbox" id="drawConst" checked>
+
+  <label>Find Star (temp/class)</label>
+  <input type="text" id="starSearch" placeholder="e.g. 6000K or G">
+
+  <button id="starSearchBtn">Search</button>
+  <button id="saveConst">Save Constellation</button>
+  <button id="loadConst">Load Saved</button>
+  <button id="clearConst">Clear</button>
+</div>
+
+<!-- SYSTEM PANEL -->
+<div id="systemPanel">
+  <div class="closeBtn">✕ Close</div>
+  <h2 id="sysName"></h2>
+  <div id="sysData"></div>
+</div>
+
+<!-- MINI MAP -->
+<div id="miniMap">
+  <canvas id="miniMapCanvas"></canvas>
+</div>
+
+<!-- MAIN CANVAS -->
+<canvas id="universe"></canvas>
+
+<!-- FOOTER -->
+<div id="footer">
+© 2025 Cornelius Aurelius · 
+<a href="https://corneliusaurelius.com/">Site</a> ·
+<a href="https://medium.com/@138licensing">Medium</a> ·
+<a href="mailto:138licensing@gmail.com">Email</a> ·
+<a href="https://zenodo.org/records/17362534">Zenodo</a> ·
+<a href="https://www.instagram.com/cornelius_aurelius_/">Instagram</a> ·
+<a href="https://www.linkedin.com/in/cornelius-aurelius-404805325/recent-activity/all/">LinkedIn</a>
+</div>
