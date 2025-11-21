@@ -480,3 +480,160 @@ function spectralColor(T){
 
   return `rgba(${r},${g},${b},0.95)`;
 }
+/* ============================================================
+   PART 3 — GHZ • Nebula • Trails • Dust • Supernova • Projection
+============================================================ */
+
+/* ------------------------------------------------------------
+   GHZ (Galactic Habitable Zone) Intensity
+------------------------------------------------------------ */
+function ghzIntensity(x,y){
+  const r = Math.sqrt(x*x + y*y);
+  let a = Math.exp(-Math.abs(r-12000)/5500);
+  return a;
+}
+
+/* ------------------------------------------------------------
+   PROJECT POINT INTO SCREEN SPACE (with rotation + parallax)
+------------------------------------------------------------ */
+function projectPoint(x,y,z){
+
+  // rotate around galaxy center
+  let cx = x * Math.cos(rotation) - y * Math.sin(rotation);
+  let cy = x * Math.sin(rotation) + y * Math.cos(rotation);
+
+  let d = z / cam.z;
+  let X = W/2 + (cx - cam.x) * 1.05 / d;
+  let Y = H/2 + (cy - cam.y) * 1.05 / d;
+
+  return { X, Y, d };
+}
+
+/* ============================================================
+   TRAILS (for moving stars, FTL, rotation, etc.)
+============================================================ */
+function drawTrail(s, X, Y, d){
+
+  const len = (1.6 / d) * OmegaSpeed.speedFactor * (0.5 + timewarp*0.5);
+  
+  ctx.strokeStyle = "rgba(255,255,255,0.08)";
+  ctx.lineWidth = 1;
+
+  ctx.beginPath();
+  ctx.moveTo(X, Y);
+  ctx.lineTo(X - len, Y - len*0.3);
+  ctx.stroke();
+}
+
+/* ============================================================
+   NEBULA FRACTALS (Ω.∞ hybrid)
+============================================================ */
+let nebulaClouds = [];
+const NEBULA_COUNT = 14;
+
+for (let i=0; i<NEBULA_COUNT; i++){
+  nebulaClouds.push({
+    x:(Math.random()-0.5)*30000,
+    y:(Math.random()-0.5)*30000,
+    size:4000 + Math.random()*6000,
+    color:{
+      r:60 + Math.random()*140,
+      g:40 + Math.random()*90,
+      b:160 + Math.random()*60,
+      a:0.05 + Math.random()*0.10
+    }
+  });
+}
+
+function nebulaPulseAlpha(a){
+  return a * (0.65 + 0.35*Math.sin(performance.now()/1400 * timewarp));
+}
+
+function drawNebulaClouds(){
+  for (const n of nebulaClouds){
+    let g = ctx.createRadialGradient(
+      W/2 + (n.x - cam.x)*0.002,
+      H/2 + (n.y - cam.y)*0.002,
+      n.size*0.05,
+      W/2 + (n.x - cam.x)*0.002,
+      H/2 + (n.y - cam.y)*0.002,
+      n.size
+    );
+
+    const c = n.color;
+    g.addColorStop(0, `rgba(${c.r},${c.g},${c.b},${nebulaPulseAlpha(c.a)})`);
+    g.addColorStop(1, `rgba(${c.r},${c.g},${c.b},0)`);
+
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ============================================================
+   INTERSTELLAR MEDIUM DUST LAYER
+============================================================ */
+let dustParticles = [];
+for (let i=0;i<8000;i++){
+  dustParticles.push({
+    x:(Math.random()-0.5)*50000,
+    y:(Math.random()-0.5)*50000,
+    z:100 + Math.random()*10000,
+    a:0.02 + Math.random()*0.05
+  });
+}
+
+function drawDust(){
+  for (const d of dustParticles){
+    let DD = d.z / cam.z;
+    if (DD>5) continue;
+
+    let X = W/2 + (d.x-cam.x)*1.2/DD;
+    let Y = H/2 + (d.y-cam.y)*1.2/DD;
+
+    ctx.fillStyle = `rgba(255,255,255,${d.a})`;
+    ctx.fillRect(X,Y,1,1);
+  }
+}
+
+/* ============================================================
+   SUPERNOVA ENGINE (Ω-Quantum Collapse Model)
+============================================================ */
+let supernovae = [];
+
+function spawnSupernova(s){
+  supernovae.push({
+    x:s.x, y:s.y, z:s.z,
+    t:0,
+    life:2000 + Math.random()*1500,
+    brightness:1
+  });
+}
+
+function updateSupernova(dt){
+  for (const sn of supernovae){
+    sn.t += dt*1000*timewarp;
+    sn.brightness = Math.max(0,1 - sn.t/sn.life);
+  }
+}
+
+function drawSupernovae(){
+  for (const sn of supernovae){
+    let P = projectPoint(sn.x, sn.y, sn.z);
+
+    let s = 60 * sn.brightness * OmegaSpeed.speedFactor * (timewarp*0.3+1);
+
+    let g = ctx.createRadialGradient(P.X,P.Y,0,P.X,P.Y,s);
+    g.addColorStop(0, `rgba(255,220,180,${sn.brightness})`);
+    g.addColorStop(0.3,`rgba(255,100,60,${sn.brightness*0.6})`);
+    g.addColorStop(1, "rgba(0,0,0,0)");
+
+    ctx.fillStyle = g;
+    ctx.fillRect(0,0,W,H);
+  }
+}
+
+/* ============================================================
+   FTL ROUTE TRAFFIC + ANOMALY BEACONS
+   (integrated previously, referenced here)
+============================================================ */
+// (Traffic, anomaly beacons already initialized in earlier blocks)
