@@ -7,12 +7,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
 <style>
-/* ============================================================
-   OMNISCIENTRIX UNIVERSE MAP vΩ.∞ MASTER EDITION
-   THE MOST ADVANCED VERSION EVER CREATED
-   — Neon Blue Quantum Theme —
-============================================================ */
-
 html, body {
   margin: 0;
   padding: 0;
@@ -23,7 +17,7 @@ html, body {
   user-select: none;
 }
 
-/* ---------------- MOBILE MENU BUTTON ---------------- */
+/* MOBILE MENU BUTTON */
 #toggleBtn {
   position: fixed;
   top: 20px;
@@ -39,7 +33,7 @@ html, body {
   z-index: 999;
 }
 
-/* ---------------- CONTROL PANEL ---------------- */
+/* CONTROL PANEL */
 #uiPanel {
   position: fixed;
   top: 20px;
@@ -92,12 +86,11 @@ html, body {
   background: #004466;
 }
 
-/* ---------------- CANVAS ---------------- */
 canvas {
   display: block;
 }
 
-/* ---------------- SYSTEM PANEL ---------------- */
+/* SYSTEM PANEL */
 #systemPanel {
   position: fixed;
   top: 20px;
@@ -124,7 +117,7 @@ canvas {
   color: #66d0ff;
 }
 
-/* ---------------- MINI-MAP ---------------- */
+/* MINI-MAP */
 #miniMap {
   position: fixed;
   bottom: 20px;
@@ -144,7 +137,7 @@ canvas {
   border-radius: 12px;
 }
 
-/* ---------------- FOOTER ---------------- */
+/* FOOTER */
 #footer {
   position: fixed;
   bottom: 12px;
@@ -160,7 +153,7 @@ canvas {
   text-shadow: 0 0 4px #0088cc;
 }
 
-/* ---------------- MOBILE ---------------- */
+/* MOBILE */
 @media(max-width: 920px){
   #toggleBtn { display: block; }
   #uiPanel { transform: translateX(140%); }
@@ -171,10 +164,8 @@ canvas {
 
 <body>
 
-<!-- MOBILE MENU -->
 <div id="toggleBtn">Ω MENU</div>
 
-<!-- CONTROL PANEL -->
 <div id="uiPanel">
   <h1>Ω.∞ CONTROL PANEL</h1>
 
@@ -215,22 +206,18 @@ canvas {
   <button id="clearConst">Clear</button>
 </div>
 
-<!-- SYSTEM PANEL -->
 <div id="systemPanel">
   <div class="closeBtn">✕ Close</div>
   <h2 id="sysName"></h2>
   <div id="sysData"></div>
 </div>
 
-<!-- MINI MAP -->
 <div id="miniMap">
   <canvas id="miniMapCanvas"></canvas>
 </div>
 
-<!-- MAIN CANVAS -->
 <canvas id="universe"></canvas>
 
-<!-- FOOTER -->
 <div id="footer">
 © 2025 Cornelius Aurelius · 
 <a href="https://corneliusaurelius.com/">Site</a> ·
@@ -241,14 +228,8 @@ canvas {
 <a href="https://www.linkedin.com/in/cornelius-aurelius-404805325/recent-activity/all/">LinkedIn</a>
 </div>
 
-
 <script>
-/* ============================================================
-   COMPLETE REPAIRED ENGINE
-   — including missing astroCtx + astroBuffer —
-============================================================ */
-
-/* ASTROCAM BUFFER — FIX FOR BLACK SCREEN */
+/* ASTROCAM BUFFER FIX */
 let astroBuffer = document.createElement("canvas");
 astroBuffer.width = innerWidth;
 astroBuffer.height = innerHeight;
@@ -259,19 +240,7 @@ window.addEventListener("resize", () => {
   astroBuffer.height = innerHeight;
 });
 
-/* =============================
-   REST OF THE ENGINE (your code)
-   =============================
-   I will now append the rest of your full engine here exactly as you provided it,
-   with no breaks, errors, or missing parts.
-*/
-
-
-/* ============================================================
-   PART 2 — CANVAS ENGINE + CAMERA + FOUNDATIONAL GALAXY SYSTEM
-============================================================ */
-
-/* ---------------- CANVAS SETUP ---------------- */
+/* CANVAS */
 const c = document.getElementById("universe");
 let ctx = c.getContext("2d", { alpha: false });
 
@@ -283,7 +252,7 @@ function resize(){
 resize();
 addEventListener("resize", resize);
 
-/* ---------------- CAMERA SYSTEM ---------------- */
+/* CAMERA */
 let cam = { x:0, y:0, z:1600, drag:false, lx:0, ly:0 };
 
 c.addEventListener("mousedown", e=>{
@@ -302,13 +271,13 @@ c.addEventListener("mousemove", e=>{
   }
 });
 
-/* Zoom */
+/* ZOOM */
 c.addEventListener("wheel", e=>{
   cam.z += e.deltaY*0.5;
   cam.z = Math.max(200, Math.min(6000, cam.z));
 });
 
-/* Touch Controls */
+/* TOUCH */
 let touchId=null;
 c.addEventListener("touchstart", e=>{
   if (e.touches.length===1){
@@ -330,7 +299,7 @@ c.addEventListener("touchmove", e=>{
 });
 c.addEventListener("touchend", ()=>{ cam.drag=false; touchId=null; });
 
-/* ---------------- CAMERA ROTATION (SHIFT + DRAG) ---------------- */
+/* ROTATION */
 let rotation = 0;
 c.addEventListener("mousemove", e=>{
   if (cam.drag && e.shiftKey){
@@ -339,9 +308,7 @@ c.addEventListener("mousemove", e=>{
   }
 });
 
-/* ============================================================
-   Ω-SPEED KERNEL — adaptive performance
-============================================================ */
+/* SPEED KERNEL */
 let lastTime = performance.now();
 let smoothing = 0.92;
 window.OmegaSpeed = {
@@ -349,17 +316,16 @@ window.OmegaSpeed = {
   speedFactor: 1,
   update(){
     const now = performance.now();
-    const elapsed = (now - lastTime)/1000;
+    const elapsed = (now-lastTime)/1000;
     lastTime = now;
     this.dt = this.dt*smoothing + elapsed*(1-smoothing);
-    this.speedFactor = this.dt > 0.030 ? 0.70 :
-                       this.dt > 0.022 ? 0.87 : 1.00;
+    this.speedFactor =
+      this.dt > 0.030 ? 0.70 :
+      this.dt > 0.022 ? 0.87 : 1.00;
   }
 };
 
-/* ============================================================
-   Ω-MOTION — camera inertia
-============================================================ */
+/* MOTION */
 window.OmegaMotion = {
   vx:0, vy:0, damping:0.90,
   apply(cam){
@@ -370,9 +336,7 @@ window.OmegaMotion = {
   }
 };
 
-/* ============================================================
-   ADVANCED GALAXY STRUCTURE (multi-harmonic spirals)
-============================================================ */
+/* ADVANCED GALAXY STRUCTURE */
 function spiralHarmonics(x,y){
   const r = Math.sqrt(x*x+y*y);
   const t = Math.atan2(y,x);
@@ -382,27 +346,22 @@ function spiralHarmonics(x,y){
   return Math.max(0, base*0.65 + h2*0.25 + h3*0.10);
 }
 
-/* Dust lane absorption */
 function dustLane(x,y){
   const yAbs = Math.abs(y);
   return Math.exp(-(yAbs*yAbs)/8000000);
 }
 
-/* Central bulge */
 function bulgeWeight(x,y){
   const r = Math.sqrt(x*x + y*y);
   return Math.exp(-(r*r)/50000000);
 }
 
-/* Disk thickness */
 function diskDensity(z){
   return Math.exp(-(z*z)/40000000)*0.85 +
          Math.exp(-(z*z)/140000000)*0.15;
 }
 
-/* ============================================================
-   STAR GENERATION (Ω.∞ PRIME)
-============================================================ */
+/* STAR GENERATION */
 let stars = [];
 const STAR_COUNT = 42000;
 
@@ -432,12 +391,9 @@ for (let i=0;i<STAR_COUNT;i++){
   });
 }
 
-/* ============================================================
-   DEEP SPACE BACKGROUND STARS
-============================================================ */
+/* DEEP SPACE STARS */
 window.deepStars = [];
 const DEEP_COUNT = 30000;
-
 for (let i=0;i<DEEP_COUNT;i++){
   deepStars.push({
     x:(Math.random()-0.5)*150000,
@@ -447,7 +403,6 @@ for (let i=0;i<DEEP_COUNT;i++){
   });
 }
 
-/* Deep star renderer */
 function drawDeepStars(){
   for (const s of deepStars){
     let d = s.z / cam.z;
@@ -459,7 +414,6 @@ function drawDeepStars(){
   }
 }
 
-/* Galaxy density gradient */
 function drawGalaxyDensity(){
   let g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.8);
   g.addColorStop(0, "rgba(255,255,255,0.02)");
@@ -469,7 +423,6 @@ function drawGalaxyDensity(){
   ctx.fillRect(0,0,W,H);
 }
 
-/* Bulge bloom */
 function drawBulge(){
   let g = ctx.createRadialGradient(W/2,H/2,30,W/2,H/2,400);
   g.addColorStop(0,"rgba(255,230,180,0.22)");
@@ -478,16 +431,11 @@ function drawBulge(){
   ctx.fillRect(0,0,W,H);
 }
 
-/* ============================================================
-   BLACKBODY SPECTRAL SHADER (real star colour)
-============================================================ */
 function spectralColor(T){
   T = Math.max(1500,Math.min(40000,T))/1000;
   let r,g,b;
-
   if (T<=6.6) r=255;
   else r=329.7*Math.pow(T-6.6,-0.1332), r=Math.min(255,Math.max(0,r));
-
   if (T<=6.6){
     g=99.47*Math.log(T)-161.12;
   } else {
@@ -505,18 +453,13 @@ function spectralColor(T){
   return `rgba(${r},${g},${b},0.95)`;
 }
 
-
-/* ============================================================
-   PART 3 — GHZ • Nebula • Trails • Dust • Supernova • Projection
-============================================================ */
-
-/* ------------------ GHZ ------------------ */
+/* GHZ */
 function ghzIntensity(x,y){
   const r = Math.sqrt(x*x + y*y);
   return Math.exp(-Math.abs(r-12000)/5500);
 }
 
-/* ------------------ Projection ------------------ */
+/* Projection */
 function projectPoint(x,y,z){
   let cx = x * Math.cos(rotation) - y * Math.sin(rotation);
   let cy = x * Math.sin(rotation) + y * Math.cos(rotation);
@@ -528,10 +471,8 @@ function projectPoint(x,y,z){
   return { X, Y, d };
 }
 
-/* ------------------ Trails ------------------ */
 function drawTrail(s, X, Y, d){
   const len = (1.6 / d) * OmegaSpeed.speedFactor * (0.5 + timewarp*0.5);
-
   ctx.strokeStyle = "rgba(255,255,255,0.08)";
   ctx.lineWidth = 1;
   ctx.beginPath();
@@ -540,7 +481,7 @@ function drawTrail(s, X, Y, d){
   ctx.stroke();
 }
 
-/* ------------------ Nebula ------------------ */
+/* NEBULA */
 let nebulaClouds = [];
 const NEBULA_COUNT = 14;
 
@@ -582,7 +523,7 @@ function drawNebulaClouds(){
   }
 }
 
-/* ------------------ Dust ------------------ */
+/* DUST */
 let dustParticles = [];
 for (let i=0;i<8000;i++){
   dustParticles.push({
@@ -597,18 +538,15 @@ function drawDust(){
   for (const d of dustParticles){
     let DD = d.z / cam.z;
     if (DD>5) continue;
-
     let X = W/2 + (d.x-cam.x)*1.2/DD;
     let Y = H/2 + (d.y-cam.y)*1.2/DD;
-
     ctx.fillStyle = `rgba(255,255,255,${d.a})`;
     ctx.fillRect(X,Y,1,1);
   }
 }
 
-/* ------------------ Supernova ------------------ */
+/* SUPERNOVAE */
 let supernovae = [];
-
 function spawnSupernova(s){
   supernovae.push({
     x:s.x, y:s.y, z:s.z,
@@ -628,27 +566,18 @@ function updateSupernova(dt){
 function drawSupernovae(){
   for (const sn of supernovae){
     let P = projectPoint(sn.x, sn.y, sn.z);
-
     let s = 60 * sn.brightness * OmegaSpeed.speedFactor * (timewarp*0.3+1);
-
     let g = ctx.createRadialGradient(P.X,P.Y,0,P.X,P.Y,s);
     g.addColorStop(0, `rgba(255,220,180,${sn.brightness})`);
     g.addColorStop(0.3,`rgba(255,100,60,${sn.brightness*0.6})`);
     g.addColorStop(1, "rgba(0,0,0,0)");
-
     ctx.fillStyle = g;
     ctx.fillRect(0,0,W,H);
   }
 }
 
-
-/* ============================================================
-   PART 4 — PLANETARY SYSTEMS (FULL Ω.∞ ENGINE)
-============================================================ */
-
-/* generate planets */
+/* PLANETS */
 for (const s of stars){
-
   const hasPlanets =
     Math.random() < 0.35 ||
     s.temp < 6500 ||
@@ -660,16 +589,12 @@ for (const s of stars){
   }
 
   const count = Math.floor(Math.random()*10) + 1;
-
   s.planets = [];
 
   for (let i=0; i<count; i++){
-
     const dist = 40 + i*(60 + Math.random()*50);
     const angle = Math.random()*Math.PI*2;
-
     const pTemp = s.temp / (1 + dist/300);
-
     const types = ["terrestrial","ice","lava","ocean","gas giant"];
     const type = types[Math.floor(Math.random()*types.length)];
 
@@ -697,12 +622,10 @@ function updateStarSystemOrbits(dt){
   }
 }
 
-/* noise */
 function pNoise(x, y){
   return (Math.sin(x*12.98 + y*78.2)*43758.5) % 1;
 }
 
-/* planet surface */
 function sampleSurfaceColor(type, x, y, temp){
   let v1 = pNoise(x, y);
   let v2 = pNoise(x*0.6, y*0.6);
@@ -726,21 +649,18 @@ function drawPlanetSurface(px, py, size, p, spin){
   let steps = Math.floor(size*2);
   for (let i=0;i<steps;i++){
     for (let j=0;j<steps;j++){
-
       let dx = i-size;
       let dy = j-size;
       if (dx*dx + dy*dy > size*size) continue;
 
       let sx = dx/size + spin*0.3;
       let sy = dy/size;
-
       ctx.fillStyle = sampleSurfaceColor(p.type, sx, sy, p.temp);
       ctx.fillRect(px+dx, py+dy, 1,1);
     }
   }
 }
 
-/* atmosphere */
 function atmosphericGlow(size, px, py, p){
   const col = {
     ice:"rgba(180,220,255,0.35)",
@@ -756,13 +676,12 @@ function atmosphericGlow(size, px, py, p){
   ctx.fill();
 }
 
-/* clouds */
 function cloudNoise(x,y,t){
   return (Math.sin(x*3.1+t*0.6)+Math.cos(y*2.7-t*0.4))*0.5;
 }
+
 function drawAtmosphere(px,py,size,p,t){
   atmosphericGlow(size,px,py,p);
-
   let steps = Math.floor(size*2);
   for (let i=0;i<steps;i++){
     for (let j=0;j<steps;j++){
@@ -772,7 +691,6 @@ function drawAtmosphere(px,py,size,p,t){
 
       let sx = dx/size;
       let sy = dy/size;
-
       let c = cloudNoise(sx,sy,t+p.angle*2);
       if (c>0.3){
         ctx.fillStyle = "rgba(255,255,255,0.12)";
@@ -782,7 +700,6 @@ function drawAtmosphere(px,py,size,p,t){
   }
 }
 
-/* lighting */
 function lightDirection(star, pos){
   const dx = star.x-pos.x;
   const dy = star.y-pos.y;
@@ -798,10 +715,8 @@ function drawLighting(px,py,size,p,s){
     for (let j=0;j<steps;j++){
       let dx=i-size, dy=j-size;
       if (dx*dx+dy*dy>size*size) continue;
-
       let sx=dx/size, sy=dy/size;
       let L = sx*light.lx + sy*light.ly;
-
       if (L<0){
         let n = Math.min(1, -L*0.9);
         ctx.fillStyle = `rgba(0,0,0,${n})`;
@@ -811,13 +726,10 @@ function drawLighting(px,py,size,p,s){
   }
 }
 
-/* rings */
 function drawRing(px,py,size,p,light){
   if (p.type!=="gas giant") return;
-
   ctx.strokeStyle="rgba(200,200,255,0.3)";
   ctx.lineWidth=1.1;
-
   ctx.beginPath();
   ctx.ellipse(px,py,size*1.8,size*0.45,Math.atan2(light.ly,light.lx),0,Math.PI*2);
   ctx.stroke();
@@ -825,7 +737,6 @@ function drawRing(px,py,size,p,light){
 
 function drawRingShadow(px,py,size,p,s){
   if (p.type!=="gas giant") return;
-
   const light = lightDirection(s,{x:px,y:py});
   ctx.strokeStyle="rgba(0,0,0,0.22)";
   ctx.lineWidth=1.2;
@@ -841,7 +752,6 @@ function drawRingShadow(px,py,size,p,s){
   ctx.stroke();
 }
 
-/* weather */
 let weatherTime = 0;
 function updateWeather(dt){ weatherTime += dt*timewarp; }
 
@@ -863,12 +773,10 @@ function drawWeather(px,py,size,p){
 
       let sx=dx/size, sy=dy/size;
       let storm=cycloneField(sx,sy,weatherTime+p.angle*3);
-
       if (storm>0.38){
         ctx.fillStyle="rgba(255,255,255,0.14)";
         ctx.fillRect(px+dx,py+dy,1,1);
       }
-
       if (lightningFlash(p)){
         ctx.fillStyle="rgba(255,255,200,0.25)";
         ctx.fillRect(px+dx,py+dy,1,1);
@@ -877,12 +785,10 @@ function drawWeather(px,py,size,p){
   }
 }
 
-/* civilization */
 function civIntensity(p){
   let life = OmegaAI.predict ? OmegaAI.predict(p.planethost) : 0;
   let tech = p.flux*0.4 + p.temp/10000*0.2;
   let collapse = OmegaCollapse ? OmegaCollapse.evolve(p.planethost) : 0;
-
   let v = life*0.5 + tech*0.3 + (1-collapse)*0.2;
   return Math.max(0,Math.min(1,v));
 }
@@ -890,7 +796,6 @@ function civIntensity(p){
 function drawCityLights(px,py,size,p,s){
   let civ=civIntensity(p);
   if (civ<0.15) return;
-
   const light=lightDirection(s,{x:px,y:py});
   let steps=Math.floor(size*2);
 
@@ -901,7 +806,6 @@ function drawCityLights(px,py,size,p,s){
 
       let sx=dx/size, sy=dy/size;
       let L=sx*light.lx + sy*light.ly;
-
       if (L>-0.15) continue;
 
       let city = Math.sin(sx*45+sy*52)+Math.cos(sx*55-sy*40);
@@ -939,25 +843,18 @@ function drawStarSystemPlanets(){
   }
 }
 
-
-/* ============================================================
-   PART 5 — ARTIFICIAL INTELLIGENCE + TECHNOSIGNATURES
-============================================================ */
-
-/* AI LIFE */
+/* AI MODELS */
 window.OmegaAI = {
   predict(s){
     let ghz = ghzIntensity(s.x, s.y);
     let flux = s.flux;
     let aware = s.aware;
     let tempScore = (s.temp > 2400 && s.temp < 8000) ? 0.6 : 0.2;
-
     let score = ghz*0.45 + flux*0.25 + aware*0.2 + tempScore*0.1;
     return Math.max(0, Math.min(1, score));
   }
 };
 
-/* DYSON SPHERE */
 window.OmegaDyson = {
   score(s){
     let dim = Math.abs(Math.sin(s.x/5000)*Math.cos(s.y/7000));
@@ -974,7 +871,6 @@ window.OmegaDyson = {
   }
 };
 
-/* FIELDS */
 window.OmegaCollapse = {
   evolve(s){ return Math.sin((s.x+s.y)/5000)*0.5 + 0.5; }
 };
@@ -994,11 +890,7 @@ window.OmegaHorizon = {
   }
 };
 
-
-/* ============================================================
-   CONSTELLATIONS + AI PATTERN DETECTION
-============================================================ */
-
+/* CONSTELLATIONS */
 window.constellations = [];
 let drawing = false;
 let lastStar = null;
@@ -1018,6 +910,7 @@ c.addEventListener("mousedown", e=>{
   let s=nearestStar(e.clientX,e.clientY);
   if (s){ drawing=true; lastStar=s; }
 });
+
 c.addEventListener("mouseup", e=>{
   if (drawing){
     let s=nearestStar(e.clientX,e.clientY);
@@ -1069,11 +962,7 @@ function drawAIConstellations(){
   }
 }
 
-
-/* ============================================================
-   ROUTE NETWORKS + FTL TRAFFIC
-============================================================ */
-
+/* ROUTES + TRAFFIC */
 window.routeNodes = [];
 function generateRouteNodes(){
   routeNodes.length=0;
@@ -1147,11 +1036,8 @@ function drawTraffic(){
     const x=R.A.x+(R.B.x-R.A.x)*p.t;
     const y=R.A.y+(R.B.y-R.A.y)*p.t;
     const z=R.A.z+(R.B.z-R.A.z)*p.t;
-
     let P = projectPoint(x,y,z);
-
     const glow = 0.6 + 0.4*Math.sin(performance.now()/150);
-
     ctx.beginPath();
     ctx.arc(P.X,P.Y,2.4,0,Math.PI*2);
     ctx.fillStyle=`rgba(0,200,255,${glow})`;
@@ -1159,11 +1045,7 @@ function drawTraffic(){
   }
 }
 
-
-/* ============================================================
-   ANOMALY BEACONS
-============================================================ */
-
+/* ANOMALIES */
 function anomalyScore(s){
   return (
     Math.abs(OmegaCollapse.evolve(s))*0.4 +
@@ -1178,8 +1060,7 @@ function drawBeacons(){
     if (A < 0.75) continue;
 
     let P = projectPoint(s.x,s.y,s.z);
-    const pulse = 0.4 + 0.6*Math.sin(performance.now()/200);
-
+    const pulse = 0.6 + 0.4*Math.sin(performance.now()/200);
     ctx.beginPath();
     ctx.arc(P.X,P.Y,4+pulse*3,0,Math.PI*2);
     ctx.strokeStyle=`rgba(255,80,120,${A*0.7})`;
@@ -1188,11 +1069,7 @@ function drawBeacons(){
   }
 }
 
-
-/* ============================================================
-   STAR CLICK PANEL
-============================================================ */
-
+/* STAR PANEL */
 const sysPanel=document.getElementById("systemPanel");
 const sysName=document.getElementById("sysName");
 const sysData=document.getElementById("sysData");
@@ -1277,18 +1154,13 @@ document.querySelector("#systemPanel .closeBtn").onclick=()=>{
   sysPanel.style.display="none";
 };
 
-
-/* ============================================================
-   MINIMAP
-============================================================ */
-
+/* MINI MAP */
 let mmCanvas=document.getElementById("miniMapCanvas");
 let mmCtx=mmCanvas.getContext("2d");
 mmCanvas.width=180;
 mmCanvas.height=180;
 
 function drawMiniMap(){
-
   mmCtx.fillStyle="#000";
   mmCtx.fillRect(0,0,180,180);
 
@@ -1321,11 +1193,7 @@ function drawMiniMap(){
   mmCtx.stroke();
 }
 
-
-/* ============================================================
-   MAIN RENDER LOOP
-============================================================ */
-
+/* RENDER LOOP */
 function render(){
 
   OmegaSpeed.update();
@@ -1335,7 +1203,6 @@ function render(){
   updateStarSystemOrbits(OmegaSpeed.dt);
 
   let useAstro = document.getElementById("astroCam").checked;
-
   ctx = useAstro ? astroCtx : c.getContext("2d",{alpha:false});
 
   if (!useAstro){
@@ -1355,12 +1222,9 @@ function render(){
   for (const s of stars){
     let P=projectPoint(s.x,s.y,s.z);
     if (P.d>4) continue;
-
     let C = spectralColor(s.temp);
-
     ctx.fillStyle=C;
     ctx.fillRect(P.X,P.Y,1.3,1.3);
-
     drawTrail(s,P.X,P.Y,P.d);
   }
 
@@ -1392,6 +1256,11 @@ function render(){
 
 render();
 
+/* MOBILE MENU */
+document.getElementById("toggleBtn").onclick=()=>{
+  document.getElementById("uiPanel").classList.toggle("open");
+};
 </script>
+
 </body>
 </html>
