@@ -966,3 +966,479 @@ function drawStarSystemPlanets(){
     }
   }
 }
+/* ============================================================
+   PART 5 — ARTIFICIAL INTELLIGENCE + TECHNOSIGNATURES
+============================================================ */
+
+/* ------------------------------------------------------------
+   AI LIFE PREDICTION ENGINE (Ω-AI)
+------------------------------------------------------------ */
+window.OmegaAI = {
+  predict(s){
+    // synthetic predictor based on GHZ + flux + awareness + temp
+    let ghz = ghzIntensity(s.x, s.y);
+    let flux = s.flux;
+    let aware = s.aware;
+    let tempScore = (s.temp > 2400 && s.temp < 8000) ? 0.6 : 0.2;
+
+    let score = ghz*0.45 + flux*0.25 + aware*0.2 + tempScore*0.1;
+    return Math.max(0, Math.min(1, score));
+  }
+};
+
+/* ------------------------------------------------------------
+   DYSON / TECHNOSIGNATURE MODEL (Ω-Dyson)
+------------------------------------------------------------ */
+window.OmegaDyson = {
+  score(s){
+    let dim = Math.abs(Math.sin(s.x/5000)*Math.cos(s.y/7000));
+    let ir = (s.temp < 5200 ? 0.4 : 0.1) + Math.sin(s.temp/1500)*0.25;
+    let st = 1 - Math.abs((s.x % 2000) - 1000)/1000;
+    let v = dim*0.35 + ir*0.45 + st*0.20;
+    return Math.max(0, Math.min(1, v));
+  },
+  color(v){
+    const r = Math.floor(40 + v*200);
+    const g = Math.floor(10 + v*40);
+    const b = Math.floor(255 - v*200);
+    return `rgba(${r},${g},${b},0.95)`;
+  }
+};
+
+/* ------------------------------------------------------------
+   COLLAPSE / HORIZON / AWARENESS / FLUX FIELDS
+------------------------------------------------------------ */
+window.OmegaCollapse = {
+  evolve(s){ return Math.sin((s.x+s.y)/5000)*0.5 + 0.5; }
+};
+
+window.OmegaAwareness = {
+  A(s){ return Math.abs(Math.sin(s.aware*3.14))*s.aware; }
+};
+
+window.OmegaFlux = {
+  F(s){ return s.flux; }
+};
+
+window.OmegaHorizon = {
+  H(s){
+    let r = Math.sqrt(s.x*s.x + s.y*s.y);
+    return Math.exp(-r/20000);
+  }
+};
+
+/* ============================================================
+   CONSTELLATION MODE + AI PATTERN DETECTION
+============================================================ */
+window.constellations = [];
+let drawing = false;
+let lastStar = null;
+
+function nearestStar(mx, my){
+  let best=null, bd=999999;
+  for (const s of stars){
+    let P=projectPoint(s.x,s.y,s.z);
+    let d=(mx-P.X)**2+(my-P.Y)**2;
+    if (d<50 && d<bd){ best=s; bd=d; }
+  }
+  return best;
+}
+
+/* Start constellation drawing */
+c.addEventListener("mousedown", e=>{
+  if (!document.getElementById("drawConst").checked) return;
+  let s=nearestStar(e.clientX,e.clientY);
+  if (s){ drawing=true; lastStar=s; }
+});
+c.addEventListener("mouseup", e=>{
+  if (drawing){
+    let s=nearestStar(e.clientX,e.clientY);
+    if (s && lastStar && s!==lastStar){
+      constellations.push({a:lastStar,b:s});
+    }
+  }
+  drawing=false;
+  lastStar=null;
+});
+
+/* Draw constellation lines */
+function drawConstellations(){
+  ctx.strokeStyle="rgba(80,180,255,0.9)";
+  ctx.lineWidth=1.4;
+  for (const L of constellations){
+    let A=projectPoint(L.a.x,L.a.y,L.a.z);
+    let B=projectPoint(L.b.x,L.b.y,L.b.z);
+    ctx.beginPath();
+    ctx.moveTo(A.X,A.Y);
+    ctx.lineTo(B.X,B.Y);
+    ctx.stroke();
+  }
+}
+
+/* AI Pattern Detection (simple cluster detection) */
+window.aiConstellations = [];
+function detectShapes(){
+  aiConstellations.length=0;
+  for (let i=0;i<constellations.length;i++){
+    for (let j=i+1;j<constellations.length;j++){
+      const A=constellations[i], B=constellations[j];
+      if (A.a===B.a || A.b===B.b || A.a===B.b || A.b===B.a){
+        let ax=(A.a.x+A.b.x+B.a.x+B.b.x)/4;
+        let ay=(A.a.y+A.b.y+B.a.y+B.b.y)/4;
+        let P=projectPoint(ax,ay,2000);
+        aiConstellations.push({X:P.X, Y:P.Y});
+      }
+    }
+  }
+}
+
+/* Draw AI highlights */
+function drawAIConstellations(){
+  for (const p of aiConstellations){
+    const pulse=0.5+0.5*Math.sin(performance.now()/300);
+    ctx.beginPath();
+    ctx.arc(p.X,p.Y,6+pulse*3,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(0,200,255,${0.5+pulse*0.4})`;
+    ctx.lineWidth=1.5;
+    ctx.stroke();
+  }
+}
+
+/* ============================================================
+   ROUTE NETWORKS + FTL TRAFFIC
+============================================================ */
+
+/* Route Nodes */
+window.routeNodes = [];
+function generateRouteNodes(){
+  routeNodes.length=0;
+  for (const s of stars){
+    if (OmegaDyson.score(s)>0.65 || OmegaAI.predict(s)>0.65)
+      routeNodes.push(s);
+  }
+  if (routeNodes.length<12){
+    for (let i=0;i<stars.length;i+=3500)
+      routeNodes.push(stars[i]);
+  }
+}
+generateRouteNodes();
+
+/* Routes */
+window.routes = [];
+function generateRoutes(){
+  routes.length=0;
+  for (let i=0;i<routeNodes.length;i++){
+    for (let j=i+1;j<routeNodes.length;j++){
+      const A=routeNodes[i], B=routeNodes[j];
+      const dx=A.x-B.x, dy=A.y-B.y;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if (dist<15000 && dist>2000){
+        routes.push({A,B,dist});
+      }
+    }
+  }
+}
+generateRoutes();
+
+/* Draw routes */
+function drawRoutes(){
+  ctx.lineWidth = 1.3;
+  for (const R of routes){
+    let A=projectPoint(R.A.x,R.A.y,R.A.z);
+    let B=projectPoint(R.B.x,R.B.y,R.B.z);
+    let intensity = Math.min(1, 7000/R.dist);
+    ctx.strokeStyle=`rgba(0,180,255,${0.5*intensity})`;
+    ctx.beginPath();
+    ctx.moveTo(A.X,A.Y);
+    ctx.lineTo(B.X,B.Y);
+    ctx.stroke();
+  }
+}
+
+/* FTL Traffic */
+window.ftlTraffic=[];
+function generateTraffic(){
+  ftlTraffic.length=0;
+  for (const R of routes){
+    let c=3+Math.floor(Math.random()*4);
+    for (let i=0;i<c;i++){
+      ftlTraffic.push({
+        R,
+        t:Math.random(),
+        speed:0.0005+Math.random()*0.0015
+      });
+    }
+  }
+}
+generateTraffic();
+
+function updateTraffic(dt){
+  for (const p of ftlTraffic){
+    p.t += p.speed * dt * timewarp;
+    if (p.t>1){ p.t=0; p.speed=0.0005+Math.random()*0.0015; }
+  }
+}
+
+function drawTraffic(){
+  for (const p of ftlTraffic){
+    const R=p.R;
+    const x=R.A.x+(R.B.x-R.A.x)*p.t;
+    const y=R.A.y+(R.B.y-R.A.y)*p.t;
+       const z=R.A.z+(R.B.z-R.A.z)*p.t;
+
+    let P = projectPoint(x,y,z);
+
+    const glow = 0.6 + 0.4*Math.sin(performance.now()/150);
+
+    ctx.beginPath();
+    ctx.arc(P.X,P.Y,2.4,0,Math.PI*2);
+    ctx.fillStyle=`rgba(0,200,255,${glow})`;
+    ctx.fill();
+  }
+}
+
+/* ============================================================
+   ANOMALY BEACONS (unstable or interesting stars)
+============================================================ */
+function anomalyScore(s){
+  return (
+    Math.abs(OmegaCollapse.evolve(s))*0.4 +
+    OmegaDyson.score(s)*0.4 +
+    s.flux*0.2
+  );
+}
+
+function drawBeacons(){
+  for (const s of stars){
+    let A = anomalyScore(s);
+    if (A < 0.75) continue;
+
+    let P = projectPoint(s.x,s.y,s.z);
+    const pulse = 0.4 + 0.6*Math.sin(performance.now()/200);
+
+    ctx.beginPath();
+    ctx.arc(P.X,P.Y,4+pulse*3,0,Math.PI*2);
+    ctx.strokeStyle=`rgba(255,80,120,${A*0.7})`;
+    ctx.lineWidth=1.8;
+    ctx.stroke();
+  }
+}
+
+/* ============================================================
+   STAR CLICK → SYSTEM PANEL INFO
+============================================================ */
+
+const sysPanel=document.getElementById("systemPanel");
+const sysName=document.getElementById("sysName");
+const sysData=document.getElementById("sysData");
+
+function spectralClass(temp){
+  if (temp < 3700) return "M (Red Dwarf)";
+  if (temp < 5200) return "K (Orange)";
+  if (temp < 6000) return "G (Yellow)";
+  if (temp < 7500) return "F (Yellow-White)";
+  if (temp < 10000) return "A (White)";
+  if (temp < 30000) return "B (Blue-White)";
+  return "O (Blue)";
+}
+
+c.addEventListener("click", e=>{
+  const mx = e.clientX, my = e.clientY;
+  let found = null;
+  let closest = 999999;
+
+  for (const s of stars){
+    let P = projectPoint(s.x,s.y,s.z);
+    let d = (mx-P.X)**2 + (my-P.Y)**2;
+    if (d < 20 && d < closest){
+      nearest = s;
+      closest = d;
+      found = s;
+    }
+  }
+
+  if (found) showSystemPanel(found);
+});
+
+/* Populate panel */
+function showSystemPanel(s){
+
+  sysName.textContent = "Star System";
+
+  let D = OmegaDyson.score(s);
+  let A = OmegaAwareness.A(s);
+  let C = OmegaCollapse.evolve(s);
+  let F = s.flux;
+  let GHZ = ghzIntensity(s.x,s.y);
+  let life = OmegaAI.predict(s);
+  let spec = spectralClass(s.temp);
+
+  let planetHTML="";
+  if (s.planets.length===0){
+    planetHTML="<i>No detected planets</i>";
+  } else {
+    for (let i=0;i<s.planets.length;i++){
+      let p=s.planets[i];
+      planetHTML +=`
+        <b>Planet ${i+1} (${p.type})</b><br>
+        Radius: ${p.radius.toFixed(2)} Earths<br>
+        Temp: ${p.temp.toFixed(1)} K<br>
+        Flux: ${p.flux.toFixed(3)}<br>
+        Atmos: O₂ ${(p.o2*100).toFixed(1)}%, CH₄ ${(p.ch4*100).toFixed(3)}%, CO₂ ${(p.co2*100).toFixed(1)}%<br>
+        Orbit: ${p.dist.toFixed(1)} units<br><br>
+      `;
+    }
+  }
+
+  sysData.innerHTML=`
+    <b>Temp:</b> ${s.temp.toFixed(0)} K<br>
+    <b>Spectral:</b> ${spec}<br>
+    <b>Dyson Probability:</b> ${(D*100).toFixed(1)}%<br>
+    <b>Life Prediction:</b> ${(life*100).toFixed(1)}%<br>
+    <b>Awareness:</b> ${A.toFixed(3)}<br>
+    <b>Collapse:</b> ${C.toFixed(3)}<br>
+    <b>Flux:</b> ${F.toFixed(3)}<br>
+    <b>GHZ:</b> ${GHZ.toFixed(3)}<br><br>
+
+    <h3>Planets:</h3>
+    ${planetHTML}
+  `;
+
+  sysPanel.style.display="block";
+
+  cam.x = s.x - W/8;
+  cam.y = s.y - H/8;
+}
+
+document.querySelector("#systemPanel .closeBtn").onclick=()=>{
+  sysPanel.style.display="none";
+};
+
+/* ============================================================
+   MINIMAP
+============================================================ */
+let mmCanvas=document.getElementById("miniMapCanvas");
+let mmCtx=mmCanvas.getContext("2d");
+mmCanvas.width=180;
+mmCanvas.height=180;
+
+function drawMiniMap(){
+
+  mmCtx.fillStyle="#000";
+  mmCtx.fillRect(0,0,180,180);
+
+  /* FTL routes */
+  mmCtx.strokeStyle="rgba(0,140,255,0.35)";
+  mmCtx.lineWidth=1;
+  for (const R of routes){
+    let x1=(R.A.x/30000)*90+90;
+    let y1=(R.A.y/30000)*90+90;
+    let x2=(R.B.x/30000)*90+90;
+    let y2=(R.B.y/30000)*90+90;
+    mmCtx.beginPath();
+    mmCtx.moveTo(x1,y1);
+    mmCtx.lineTo(x2,y2);
+    mmCtx.stroke();
+  }
+
+  /* stars */
+  mmCtx.fillStyle="#77ccff";
+  for (const s of stars){
+    let x=(s.x/30000)*90+90;
+    let y=(s.y/30000)*90+90;
+    mmCtx.fillRect(x,y,1,1);
+  }
+
+  /* camera */
+  mmCtx.strokeStyle="#ffcc00";
+  mmCtx.lineWidth=2;
+  let cx=(cam.x/30000)*90+90;
+  let cy=(cam.y/30000)*90+90;
+  mmCtx.beginPath();
+  mmCtx.arc(cx,cy,6,0,Math.PI*2);
+  mmCtx.stroke();
+}
+
+/* ============================================================
+   MAIN RENDER LOOP (FINAL ASSEMBLY)
+============================================================ */
+
+function render(){
+
+  OmegaSpeed.update();
+  updateWeather(OmegaSpeed.dt);
+  updateTraffic(OmegaSpeed.dt);
+  updateSupernova(OmegaSpeed.dt);
+  updateStarSystemOrbits(OmegaSpeed.dt);
+
+  ctx = (document.getElementById("astroCam").checked ?
+    astroCtx : c.getContext("2d",{alpha:false}));
+
+  if (!document.getElementById("astroCam").checked){
+    ctx.fillStyle="#000";
+    ctx.fillRect(0,0,W,H);
+  } else {
+    astroCtx.fillStyle="rgba(0,0,0,0.08)";
+    astroCtx.fillRect(0,0,W,H);
+  }
+
+  /* Background */
+  drawDeepStars();
+  drawGalaxyDensity();
+  drawBulge();
+  drawNebulaClouds();
+  drawDust();
+
+  /* Stars */
+  for (const s of stars){
+    let P=projectPoint(s.x,s.y,s.z);
+
+    if (P.d>4) continue;
+
+    let C = spectralColor(s.temp);
+
+    ctx.fillStyle=C;
+    ctx.fillRect(P.X,P.Y,1.3,1.3);
+
+    /* Trails if moving */
+    drawTrail(s,P.X,P.Y,P.d);
+  }
+
+  /* Planets */
+  drawStarSystemPlanets();
+
+  /* Supernovae */
+  drawSupernovae();
+
+  /* Ω modes */
+  let mode=document.getElementById("modeSel").value;
+
+  if (mode==="constel"){
+    detectShapes();
+    drawConstellations();
+    drawAIConstellations();
+  }
+
+  if (mode==="dyson"){
+    drawRoutes();
+    drawTraffic();
+    drawBeacons();
+  }
+
+  /* Minimap */
+  drawMiniMap();
+
+  /* AstroCamera */
+  if (document.getElementById("astroCam").checked){
+    c.getContext("2d").drawImage(astroBuffer,0,0);
+  }
+
+  requestAnimationFrame(render);
+}
+
+render();
+
+</script>
+</body>
+</html>
+
