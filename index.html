@@ -637,3 +637,332 @@ function drawSupernovae(){
    (integrated previously, referenced here)
 ============================================================ */
 // (Traffic, anomaly beacons already initialized in earlier blocks)
+/* ============================================================
+   PART 4 — PLANETARY SYSTEMS (FULL Ω.∞ ENGINE)
+============================================================ */
+
+/* ------------------------------------------------------------
+   GENERATE PLANETARY SYSTEMS FOR EACH STAR
+------------------------------------------------------------ */
+for (const s of stars){
+
+  // probability the star has planets
+  const hasPlanets =
+    Math.random() < 0.35 ||             // random chance
+    s.temp < 6500 ||                     // cooler stars more likely
+    ghzIntensity(s.x, s.y) > 0.45;       // inside GHZ
+
+  if (!hasPlanets){
+    s.planets = [];
+    continue;
+  }
+
+  const count = Math.floor(Math.random()*10) + 1;
+
+  s.planets = [];
+
+  for (let i=0; i<count; i++){
+
+    const dist = 40 + i*(60 + Math.random()*50);
+    const angle = Math.random()*Math.PI*2;
+
+    // planet temperature decreases with distance
+    const pTemp = s.temp / (1 + dist/300);
+
+    const types = ["terrestrial","ice","lava","ocean","gas giant"];
+    const type = types[Math.floor(Math.random()*types.length)];
+
+    s.planets.push({
+      angle,
+      dist,
+      radius: 0.8 + Math.random()*4,
+      type,
+      temp: pTemp,
+      flux: 1 / (1 + dist/400),
+      o2: Math.random()*0.25,
+      ch4: Math.random()*0.04,
+      co2: Math.random()*0.12,
+      planethost: s
+    });
+  }
+}
+
+/* ------------------------------------------------------------
+   UPDATE PLANETARY ORBITS
+------------------------------------------------------------ */
+function updateStarSystemOrbits(dt){
+  for (const s of stars){
+    for (const p of s.planets){
+      const spd = 0.00025 + Math.random()*0.0004;
+      p.angle += spd * dt * timewarp;
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   BASIC NOISE (fast pseudo-noise)
+------------------------------------------------------------ */
+function pNoise(x, y){
+  return (Math.sin(x*12.98 + y*78.2)*43758.5) % 1;
+}
+
+/* ------------------------------------------------------------
+   PLANET SURFACE COLOR TEXTURING
+------------------------------------------------------------ */
+function sampleSurfaceColor(type, x, y, temp){
+  let v1 = pNoise(x, y);
+  let v2 = pNoise(x*0.6, y*0.6);
+  let v = v1*0.6 + v2*0.4;
+
+  switch(type){
+    case "ice":
+      return `rgba(${200+v*40},${220+v*30},255,1)`;
+    case "lava":
+      return `rgba(${180+v*70},${40+v*30},${30+v*20},1)`;
+    case "ocean":
+      return `rgba(${40+v*30},${80+v*40},${180+v*40},1)`;
+    case "gas giant":
+      return `rgba(${180+v*60},${140+v*50},${220+v*50},1)`;
+    default:
+      return `rgba(${90+v*80},${120+v*70},${60+v*40},1)`;
+  }
+}
+
+/* ------------------------------------------------------------
+   DRAW PLANET SURFACE MAP
+------------------------------------------------------------ */
+function drawPlanetSurface(px, py, size, p, spin){
+  let steps = Math.floor(size*2);
+  for (let i=0;i<steps;i++){
+    for (let j=0;j<steps;j++){
+
+      let dx = i-size;
+      let dy = j-size;
+      if (dx*dx + dy*dy > size*size) continue;
+
+      let sx = dx/size + spin*0.3;
+      let sy = dy/size;
+
+      ctx.fillStyle = sampleSurfaceColor(p.type, sx, sy, p.temp);
+      ctx.fillRect(px+dx, py+dy, 1,1);
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   ATMOSPHERIC GLOW
+------------------------------------------------------------ */
+function atmosphericGlow(size, px, py, p){
+  const col = {
+    ice:"rgba(180,220,255,0.35)",
+    lava:"rgba(255,120,40,0.25)",
+    ocean:"rgba(120,180,255,0.3)",
+    terrestrial:"rgba(180,220,255,0.18)",
+    "gas giant":"rgba(200,160,255,0.25)"
+  }[p.type] || "rgba(180,220,255,0.18)";
+
+  ctx.beginPath();
+  ctx.arc(px, py, size*1.15, 0, Math.PI*2);
+  ctx.fillStyle = col;
+  ctx.fill();
+}
+
+/* ------------------------------------------------------------
+   CLOUD LAYER
+------------------------------------------------------------ */
+function cloudNoise(x,y,t){
+  return (Math.sin(x*3.1+t*0.6)+Math.cos(y*2.7-t*0.4))*0.5;
+}
+function drawAtmosphere(px,py,size,p,t){
+  atmosphericGlow(size,px,py,p);
+
+  let steps = Math.floor(size*2);
+  for (let i=0;i<steps;i++){
+    for (let j=0;j<steps;j++){
+      let dx = i-size;
+      let dy = j-size;
+      if (dx*dx+dy*dy>size*size) continue;
+
+      let sx = dx/size;
+      let sy = dy/size;
+
+      let c = cloudNoise(sx,sy,t+p.angle*2);
+      if (c>0.3){
+        ctx.fillStyle = "rgba(255,255,255,0.12)";
+        ctx.fillRect(px+dx,py+dy,1,1);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   LIGHT DIRECTION FROM HOST STAR
+------------------------------------------------------------ */
+function lightDirection(star, pos){
+  const dx = star.x-pos.x;
+  const dy = star.y-pos.y;
+  const m = Math.sqrt(dx*dx+dy*dy)+0.0001;
+  return {lx:dx/m, ly:dy/m};
+}
+
+/* ------------------------------------------------------------
+   SHADING (DAY/NIGHT TERMINATOR)
+------------------------------------------------------------ */
+function drawLighting(px,py,size,p,s){
+  const light = lightDirection(s,{x:px,y:py});
+  let steps = Math.floor(size*2);
+
+  for (let i=0;i<steps;i++){
+    for (let j=0;j<steps;j++){
+      let dx=i-size, dy=j-size;
+      if (dx*dx+dy*dy>size*size) continue;
+
+      let sx=dx/size, sy=dy/size;
+      let L = sx*light.lx + sy*light.ly;
+
+      if (L<0){
+        let n = Math.min(1, -L*0.9);
+        ctx.fillStyle = `rgba(0,0,0,${n})`;
+        ctx.fillRect(px+dx,py+dy,1,1);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   GAS GIANT RINGS + RING SHADOW
+------------------------------------------------------------ */
+function drawRing(px,py,size,p,light){
+  if (p.type!=="gas giant") return;
+
+  ctx.strokeStyle="rgba(200,200,255,0.3)";
+  ctx.lineWidth=1.1;
+
+  ctx.beginPath();
+  ctx.ellipse(px,py,size*1.8,size*0.45,Math.atan2(light.ly,light.lx),0,Math.PI*2);
+  ctx.stroke();
+}
+
+function drawRingShadow(px,py,size,p,s){
+  if (p.type!=="gas giant") return;
+
+  const light = lightDirection(s,{x:px,y:py});
+  ctx.strokeStyle="rgba(0,0,0,0.22)";
+  ctx.lineWidth=1.2;
+
+  ctx.beginPath();
+  ctx.ellipse(
+    px-light.lx*size*0.5,
+    py-light.ly*size*0.5,
+    size*1.8,size*0.45,
+    Math.atan2(light.ly,light.lx),
+    0,Math.PI*2
+  );
+  ctx.stroke();
+}
+
+/* ------------------------------------------------------------
+   WEATHER SYSTEM (STORMS + LIGHTNING)
+------------------------------------------------------------ */
+let weatherTime = 0;
+function updateWeather(dt){ weatherTime += dt*timewarp; }
+
+function cycloneField(x,y,t){
+  return Math.sin((x*3+t*0.3))*Math.cos((y*3-t*0.3));
+}
+
+function lightningFlash(p){
+  let chance = 0.0003 + p.temp/200000;
+  return Math.random()<chance;
+}
+
+function drawWeather(px,py,size,p){
+  let steps=Math.floor(size*2);
+  for (let i=0;i<steps;i++){
+    for (let j=0;j<steps;j++){
+      let dx=i-size, dy=j-size;
+      if (dx*dx+dy*dy>size*size) continue;
+
+      let sx=dx/size, sy=dy/size;
+      let storm=cycloneField(sx,sy,weatherTime+p.angle*3);
+
+      if (storm>0.38){
+        ctx.fillStyle="rgba(255,255,255,0.14)";
+        ctx.fillRect(px+dx,py+dy,1,1);
+      }
+
+      if (lightningFlash(p)){
+        ctx.fillStyle="rgba(255,255,200,0.25)";
+        ctx.fillRect(px+dx,py+dy,1,1);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   NIGHT-SIDE CITY LIGHTS (CIVILIZATION)
+------------------------------------------------------------ */
+function civIntensity(p){
+  let life = OmegaAI.predict ? OmegaAI.predict(p.planethost) : 0;
+  let tech = p.flux*0.4 + p.temp/10000*0.2;
+  let collapse = OmegaCollapse ? OmegaCollapse.evolve(p.planethost) : 0;
+
+  let v = life*0.5 + tech*0.3 + (1-collapse)*0.2;
+  return Math.max(0,Math.min(1,v));
+}
+
+function drawCityLights(px,py,size,p,s){
+  let civ=civIntensity(p);
+  if (civ<0.15) return;
+
+  const light=lightDirection(s,{x:px,y:py});
+  let steps=Math.floor(size*2);
+
+  for (let i=0;i<steps;i++){
+    for (let j=0;j<steps;j++){
+      let dx=i-size, dy=j-size;
+      if (dx*dx+dy*dy>size*size) continue;
+
+      let sx=dx/size, sy=dy/size;
+      let L=sx*light.lx + sy*light.ly;
+
+      if (L>-0.15) continue; // night-side only
+
+      let city = Math.sin(sx*45+sy*52)+Math.cos(sx*55-sy*40);
+      if (city>0.4){
+        ctx.fillStyle=`rgba(255,220,120,${civ*0.35})`;
+        ctx.fillRect(px+dx,py+dy,1,1);
+      }
+    }
+  }
+}
+
+/* ------------------------------------------------------------
+   DRAW FULL PLANETARY SYSTEM
+------------------------------------------------------------ */
+function drawStarSystemPlanets(){
+  for (const s of stars){
+    for (const p of s.planets){
+
+      let px = s.x + Math.cos(p.angle)*p.dist;
+      let py = s.y + Math.sin(p.angle)*p.dist;
+      let pz = s.z;
+
+      let Pp = projectPoint(px,py,pz);
+      let size = Math.max(1.4, p.radius/(p.dist*0.03 + 0.7));
+      let spin = p.angle;
+
+      // full rendering order:
+      drawPlanetSurface(Pp.X,Pp.Y,size,p,spin);
+      drawAtmosphere(Pp.X,Pp.Y,size,p,performance.now()/800);
+      drawLighting(Pp.X,Pp.Y,size,p,s);
+
+      const light = lightDirection(s,{x:Pp.X,y:Pp.Y});
+      drawRingShadow(Pp.X,Pp.Y,size,p,s);
+      drawRing(Pp.X,Pp.Y,size,p,light);
+
+      drawWeather(Pp.X,Pp.Y,size,p);
+      drawCityLights(Pp.X,Pp.Y,size,p,s);
+    }
+  }
+}
