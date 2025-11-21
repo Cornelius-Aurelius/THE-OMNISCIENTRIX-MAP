@@ -1358,6 +1358,19 @@ function drawMiniMap(){
   mmCtx.arc(cx,cy,6,0,Math.PI*2);
   mmCtx.stroke();
 }
+/* ============================================================
+   ASTRO CAMERA BUFFER (Fixes the black screen)
+============================================================ */
+
+let astroBuffer = document.createElement("canvas");
+astroBuffer.width = innerWidth;
+astroBuffer.height = innerHeight;
+let astroCtx = astroBuffer.getContext("2d", { alpha: false });
+
+window.addEventListener("resize", () => {
+  astroBuffer.width = innerWidth;
+  astroBuffer.height = innerHeight;
+});
 
 /* ============================================================
    MAIN RENDER LOOP (FINAL ASSEMBLY)
