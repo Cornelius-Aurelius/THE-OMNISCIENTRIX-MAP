@@ -240,3 +240,243 @@ canvas {
 <a href="https://www.instagram.com/cornelius_aurelius_/">Instagram</a> ·
 <a href="https://www.linkedin.com/in/cornelius-aurelius-404805325/recent-activity/all/">LinkedIn</a>
 </div>
+<script>
+/* ============================================================
+   PART 2 — CANVAS ENGINE + CAMERA + FOUNDATIONAL GALAXY SYSTEM
+   (Includes Ω-Speed, Ω-Motion, multi-harmonic spiral generation,
+    deep-field background, dust lanes, bulge, and base stars)
+============================================================ */
+
+/* ---------------- CANVAS SETUP ---------------- */
+const c = document.getElementById("universe");
+let ctx = c.getContext("2d", { alpha: false });
+
+let W, H;
+function resize(){
+  W = c.width = innerWidth;
+  H = c.height = innerHeight;
+}
+resize();
+addEventListener("resize", resize);
+
+/* ---------------- CAMERA SYSTEM ---------------- */
+let cam = { x:0, y:0, z:1600, drag:false, lx:0, ly:0 };
+
+c.addEventListener("mousedown", e=>{
+  cam.drag = true;
+  cam.lx = e.clientX;
+  cam.ly = e.clientY;
+});
+addEventListener("mouseup", ()=> cam.drag=false);
+
+c.addEventListener("mousemove", e=>{
+  if (cam.drag){
+    cam.x -= (e.clientX - cam.lx) * 1.15;
+    cam.y -= (e.clientY - cam.ly) * 1.15;
+    cam.lx = e.clientX;
+    cam.ly = e.clientY;
+  }
+});
+
+/* Zoom */
+c.addEventListener("wheel", e=>{
+  cam.z += e.deltaY*0.5;
+  cam.z = Math.max(200, Math.min(6000, cam.z));
+});
+
+/* Touch Controls */
+let touchId=null;
+c.addEventListener("touchstart", e=>{
+  if (e.touches.length===1){
+    touchId = e.touches[0].identifier;
+    cam.drag = true;
+    cam.lx = e.touches[0].clientX;
+    cam.ly = e.touches[0].clientY;
+  }
+});
+c.addEventListener("touchmove", e=>{
+  for (const t of e.touches){
+    if (t.identifier===touchId && cam.drag){
+      cam.x -= (t.clientX - cam.lx) * 1.15;
+      cam.y -= (t.clientY - cam.ly) * 1.15;
+      cam.lx = t.clientX;
+      cam.ly = t.clientY;
+    }
+  }
+});
+c.addEventListener("touchend", ()=>{ cam.drag=false; touchId=null; });
+
+/* ---------------- CAMERA ROTATION (SHIFT + DRAG) ---------------- */
+let rotation = 0;
+c.addEventListener("mousemove", e=>{
+  if (cam.drag && e.shiftKey){
+    rotation += (e.clientX - cam.lx)*0.0025;
+    cam.lx = e.clientX;
+  }
+});
+
+/* ============================================================
+   Ω-SPEED KERNEL — adaptive performance
+============================================================ */
+let lastTime = performance.now();
+let smoothing = 0.92;
+window.OmegaSpeed = {
+  dt: 0.016,
+  speedFactor: 1,
+  update(){
+    const now = performance.now();
+    const elapsed = (now - lastTime)/1000;
+    lastTime = now;
+    this.dt = this.dt*smoothing + elapsed*(1-smoothing);
+    this.speedFactor = this.dt > 0.030 ? 0.70 :
+                       this.dt > 0.022 ? 0.87 : 1.00;
+  }
+};
+
+/* ============================================================
+   Ω-MOTION — camera inertia
+============================================================ */
+window.OmegaMotion = {
+  vx:0, vy:0, damping:0.90,
+  apply(cam){
+    cam.x -= this.vx * OmegaSpeed.speedFactor;
+    cam.y -= this.vy * OmegaSpeed.speedFactor;
+    this.vx *= this.damping;
+    this.vy *= this.damping;
+  }
+};
+
+/* ============================================================
+   ADVANCED GALAXY STRUCTURE (multi-harmonic spirals)
+============================================================ */
+function spiralHarmonics(x,y){
+  const r = Math.sqrt(x*x+y*y);
+  const t = Math.atan2(y,x);
+  const base = Math.cos(4*(t - Math.log(r+1)*0.23));
+  const h2 = Math.cos(6*(t - Math.log(r+1)*0.18));
+  const h3 = Math.cos(3*(t - Math.log(r+1)*0.27));
+  return Math.max(0, base*0.65 + h2*0.25 + h3*0.10);
+}
+
+/* Dust lane absorption */
+function dustLane(x,y){
+  const yAbs = Math.abs(y);
+  return Math.exp(-(yAbs*yAbs)/8000000);
+}
+
+/* Central bulge */
+function bulgeWeight(x,y){
+  const r = Math.sqrt(x*x + y*y);
+  return Math.exp(-(r*r)/50000000);
+}
+
+/* Disk thickness */
+function diskDensity(z){
+  return Math.exp(-(z*z)/40000000)*0.85 +
+         Math.exp(-(z*z)/140000000)*0.15;
+}
+
+/* ============================================================
+   STAR GENERATION (Ω.∞ PRIME)
+============================================================ */
+let stars = [];
+const STAR_COUNT = 42000;
+
+for (let i=0;i<STAR_COUNT;i++){
+  let r = (Math.random()**0.52)*24000;
+  let t = Math.random()*Math.PI*2;
+
+  let x = r*Math.cos(t);
+  let y = r*Math.sin(t);
+
+  let armBoost = spiralHarmonics(x,y);
+  if (Math.random() < armBoost*0.75){
+    x *= 1+(Math.random()-0.5)*0.10;
+    y *= 1+(Math.random()-0.5)*0.10;
+  }
+
+  let z = 200 + Math.random()*9000;
+  if (Math.random()<0.15) z *= 1+(Math.random()*0.5);
+
+  stars.push({
+    x,y,z,
+    temp: 2500+Math.random()*20000,
+    aware: Math.random(),
+    flux: Math.random(),
+    alphaMod: 1 - dustLane(x,y)*0.25,
+    bulge: bulgeWeight(x,y)
+  });
+}
+
+/* ============================================================
+   DEEP SPACE BACKGROUND STARS
+============================================================ */
+window.deepStars = [];
+const DEEP_COUNT = 30000;
+
+for (let i=0;i<DEEP_COUNT;i++){
+  deepStars.push({
+    x:(Math.random()-0.5)*150000,
+    y:(Math.random()-0.5)*150000,
+    z:9000+Math.random()*30000,
+    a:0.05+Math.random()*0.10
+  });
+}
+
+/* Deep star renderer */
+function drawDeepStars(){
+  for (const s of deepStars){
+    let d = s.z / cam.z;
+    if (d>12) continue;
+    let X = W/2 + (s.x-cam.x)*0.7/d;
+    let Y = H/2 + (s.y-cam.y)*0.7/d;
+    ctx.fillStyle = `rgba(255,255,255,${s.a*0.2})`;
+    ctx.fillRect(X,Y,1,1);
+  }
+}
+
+/* Galaxy density gradient */
+function drawGalaxyDensity(){
+  let g = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.8);
+  g.addColorStop(0, "rgba(255,255,255,0.02)");
+  g.addColorStop(0.4,"rgba(255,255,255,0.01)");
+  g.addColorStop(1, "rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+/* Bulge bloom */
+function drawBulge(){
+  let g = ctx.createRadialGradient(W/2,H/2,30,W/2,H/2,400);
+  g.addColorStop(0,"rgba(255,230,180,0.22)");
+  g.addColorStop(1,"rgba(0,0,0,0)");
+  ctx.fillStyle = g;
+  ctx.fillRect(0,0,W,H);
+}
+
+/* ============================================================
+   BLACKBODY SPECTRAL SHADER (real star colour)
+============================================================ */
+function spectralColor(T){
+  T = Math.max(1500,Math.min(40000,T))/1000;
+  let r,g,b;
+
+  if (T<=6.6) r=255;
+  else r=329.7*Math.pow(T-6.6,-0.1332), r=Math.min(255,Math.max(0,r));
+
+  if (T<=6.6){
+    g=99.47*Math.log(T)-161.12;
+  } else {
+    g=288.12*Math.pow(T-6.6,-0.0755);
+  }
+  g=Math.min(255,Math.max(0,g));
+
+  if (T>=6.6) b=255;
+  else if (T<=1) b=0;
+  else {
+    b=138.52*Math.log(T-1)-305.04;
+    b=Math.min(255,Math.max(0,b));
+  }
+
+  return `rgba(${r},${g},${b},0.95)`;
+}
